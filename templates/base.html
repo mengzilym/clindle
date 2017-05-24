@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clindle_style.css') }}">
+    <title>Clindle</title>
+    <script type="text/javascript">
+    function hideElement() {
+        document.getElementsByClassName("message")[0].hidden="hidden";
+    }
+    </script>
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body>
+<div class="banner">
+    <h2>Max Flew 的kindle书摘和笔记</h2>
+    <div class="line banner-line"></div>
+</div>
+<div class="content">
+    {% for message in get_flashed_messages() %}
+    <div class="message">
+        <p>{{ message|safe }}</p>
+        <input type="button" value="OK" autofocus="autofocus" onclick="hideElement()">
+    </div>
+    {% endfor %}
+{% block content %}
+{% endblock %}
+</div>
+<footer class="clip-footer clear">
+    <div class="line"></div>
+    <P>曾经沧海难为水  除却巫山不是云</P>
+</footer>
+</body>
+
+</html>

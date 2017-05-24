@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="side-func">
+    <!--文件上传：1.Flask原生实现方法-->
+    <!--<p>文件上传方法一：使用Flask原生实现方法。</p>
+    <form class="upload" action="/upload_origin" method="POST" enctype="multipart/form-data">
+        <input class="select-txt" type="file" name="txt_file">
+        <input class="upload-txt" type="submit" value="上传">
+    </form>
+    <div class="line clear"></div>-->
+
+    <!--文件上传：2.Flask-uploads插件实现-->
+    <p>'My Clippings.txt'文件上传</p>
+    <form class="upload" action="/upload_ext" method="POST" enctype="multipart/form-data">
+        <input class="select-txt" type="file" name="txt_file">
+        <input class="upload-txt" type="submit" value="上传">
+    </form>
+    <div class="line clear"></div>
+
+    
+    <div class="get-cover">
+        <a href="/api/getcover">获取封面</a>
+    </div>
+</div>
+
+<div class="side-content books">
+    <div class="book-edit-func">
+        <ul class="order">
+            <li><a href="">正序</a></li>
+            <li><a href="">倒序</a></li>
+        </ul>
+        <ul class="cover">
+            <li class="pipe">|</li>
+            <li><a href="">隐藏封面</a></li>
+            <li><a href="">显示封面</a></li>
+        </ul>
+        <ul class="layout">
+            <li class="pipe">|</li>
+            <li><a href="">列表</a></li>
+            <li><a href="">网格</a></li>
+        </ul>
+    </div>
+    <div class="line clear"></div>
+    <div class="booklist">
+        {% if books %}
+        {% for booktitle in books %}
+        <div class="book-board">
+            <h3>{{ booktitle }}</h3>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+     
+{% endblock %}

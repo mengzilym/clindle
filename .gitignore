@@ -1,0 +1,14 @@
+# vscode
+__pycache__/
+
+# python
+*.py[cod]
+
+# testing files
+backup_file/*
+!backup_file/.gitkeep
+data/json/*
+!data/json/.gitkeep
+data/pics/*
+!data/pics/.gitkeep
+My Clippings.txt
