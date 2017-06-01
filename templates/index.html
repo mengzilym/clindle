@@ -2,19 +2,14 @@
 
 {% block content %}
 <div class="side-func">
-    <!--文件上传：1.Flask原生实现方法-->
-    <!--<p>文件上传方法一：使用Flask原生实现方法。</p>
-    <form class="upload" action="/upload_origin" method="POST" enctype="multipart/form-data">
-        <input class="select-txt" type="file" name="txt_file">
-        <input class="upload-txt" type="submit" value="上传">
-    </form>
-    <div class="line clear"></div>-->
-
-    <!--文件上传：2.Flask-uploads插件实现-->
+    <!--文件上传：Flask-wtf & Flask-uploads插件实现-->
     <p>'My Clippings.txt'文件上传</p>
-    <form class="upload" action="/upload_ext" method="POST" enctype="multipart/form-data">
-        <input class="select-txt" type="file" name="txt_file">
-        <input class="upload-txt" type="submit" value="上传">
+    <form class="upload" action="/upload" method="POST" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {{ form.clipsfile(class="select-txt") }}
+        {{ form.submit(class="upload-txt") }}
+        <!--<input class="select-txt" type="file" name="txt_file">
+        <input class="upload-txt" type="submit" value="上传">-->
     </form>
     <div class="line clear"></div>
 
@@ -43,6 +38,9 @@
     </div>
     <div class="line clear"></div>
     <div class="booklist">
+        {% if jsonname %}
+        <p>{{ jsonname }}</p>
+        {% endif %}
         {% if books %}
         {% for booktitle in books %}
         <div class="book-board">
