@@ -105,7 +105,7 @@ div.book-edit-func li a {
     background-color: #e8e8e8;
 }
 div.book-edit-func li a:hover {
-    background-color: #8a2b12;
+    background-color: #42a5f5;
     color: white;
 }
 li.pipe {
@@ -122,9 +122,14 @@ div.booklist {
     min-width: 400px;
     min-height: 100px;
     margin: 10px 0px;
-    border: 1px solid;
+    /*border: 1px solid;*/
 }
-
+div.book-board {
+    margin: 5px;
+    padding: 5px 20px;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+}
 
 footer {
     height: 100px;
