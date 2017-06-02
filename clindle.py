@@ -73,7 +73,7 @@ def entity_too_large(error):
 
 
 @app.route('/upload', methods=['POST'])
-def upload_file_ext():
+def upload():
     """
     上传'My Clippings.txt'文档，根据日期重命名，
     并保存至本地'backup_file'文件夹；
