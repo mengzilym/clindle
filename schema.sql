@@ -1,15 +1,18 @@
 -- using sqlite;
-drop table if exists Books;
-drop table if exists Clips;
-create table Books (
-    id int not null primary key autoincrement,
-    title text not null
+DROP TABLE IF EXISTS Books;
+DROP TABLE IF EXISTS Clips;
+CREATE TABLE Books (
+    id integer primary key autoincrement,
+    title text not null,
+    author text,
+    cover text
 );
-create table Clips (
-    id int not null primary key autoincrement,
-    clip_type char not null,
-    pos char not null,
-    time char not null,
-    content text not null,
-    book_id int
-)
+CREATE TABLE Clips (
+    id integer primary key autoincrement,
+    cliptype text not null,
+    pos text not null,
+    time text not null,
+    content text,
+    bookid integer,
+    FOREIGN KEY(bookid) REFERENCES Books(id)
+);

@@ -9,13 +9,14 @@ License: BSD, see LICENSE for more details.
 
 import os
 import json
+import sqlite3
 from datetime import datetime
 from pypinyin import lazy_pinyin
-from flask import Flask, request, session, redirect, url_for, abort, \
-     render_template, flash
+from flask import Flask, flash, abort, g, redirect, render_template, \
+    request, session, url_for
 from werkzeug.utils import secure_filename
 from flask_uploads import UploadSet, TEXT, configure_uploads, \
-     patch_request_class, UploadNotAllowed
+    patch_request_class, UploadNotAllowed
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms import SubmitField
@@ -28,6 +29,43 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 # 或许需要加载独立的、根据环境而变化的配置文件
 app.config.from_envvar('FLASK_SETTINGS', silent=True)
+
+
+# 数据库操作函数
+def connect_db():
+    conn = sqlite3.connect(app.config['DATABASE'])
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def get_db():
+    """如果当前应用上下文没有数据库连接，
+    则打开一个新的数据库连接。"""
+    if not hasattr(g, 'sqlite_db'):
+        g.sqlite_db = connect_db()
+        return g.sqlite_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    """在request结束的时候再次close数据库连接"""
+    if hasattr(g, 'sqlite_db'):
+        g.sqlite_db.close()
+
+
+# 初始化数据库
+def init_db():
+    """根据数据库的schema创建数据库。"""
+    conn = get_db()
+    with app.open_resource('schema.sql', 'r') as f:
+        conn.cursor().executescript(f.read())
+    conn.commit()
+
+
+@app.cli.command('initdb')
+def initdb_comd():
+    """初始化数据库"""
+    init_db()
 
 
 # 创建upload set并注册配置
@@ -45,6 +83,7 @@ class UploadForm(FlaskForm):
     submit = SubmitField('上传')
 
 
+# 视图函数
 @app.route('/')
 def index():
     # 临时性解决方式 -- not lasting --
@@ -60,7 +99,8 @@ def index():
         books = None
 
     form = UploadForm()
-    return render_template('index.html', books=books, form=form, jsonname=jsonname)
+    return render_template('index.html', books=books, form=form,
+                           jsonname=jsonname)
 
 
 @app.errorhandler(413)
@@ -68,10 +108,40 @@ def entity_too_large(error):
     flash('File size are too large!')
     return redirect(url_for('index')), 413
 
+
+# 将‘标注’存储至数据库
+def save2db(clips):
+    """将解析得到的标注dict对象，保存到数据库中。
+    如果不是第一次解析，则只根据有变化的数据更新数据库。
+    """
+    conn = get_db()
+    cur = conn.cursor()
+
+    with app.open_resource('schema.sql', 'r') as f:
+        cur.executescript(f.read())
+
+    def titles():
+        for title in clips.keys():
+            yield (title,)
+    try:
+        # 将书籍名称存入Books表中
+        cur.executemany('insert into Books(title) values(?)', titles())
+        # 将标注信息存入Clips表中
+        for title, clipsofonebook in clips.items():
+            cur.execute('select id from Books where title = ?', (title,))
+            bookid = cur.fetchone()[0]
+            for clip in clipsofonebook.values():
+                cur.execute('insert into Clips values(null, ?, ?, ?, ?, ?)',
+                            (clip['type'], clip['pos'], clip['time'],
+                                clip['content'], bookid))
+    except:
+        conn.rollback()
+    conn.commit()
+    conn.close()
+
+
 # ------File upload------
 # --使用flask-uploads扩展上传文件--
-
-
 @app.route('/upload', methods=['POST'])
 def upload():
     """
@@ -94,7 +164,9 @@ def upload():
                 [datetime.now().strftime('%Y%m%d_%H%M%S_'), f_name])
             filename = clipstxt.save(f, name=f_rename)
             kindleparser = ClipsParser(filename)
-            kindleparser.parse()
+            clips = kindleparser.parse()
+            print(type(clips))
+            save2db(clips)
             flash('文件上传成功。')
         except UploadNotAllowed:
             # 经过上面form.validate_on_submit()，下面这两句应该不会执行了

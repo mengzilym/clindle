@@ -7,8 +7,10 @@ __pycache__/
 # testing files
 backup_file/*
 !backup_file/.gitkeep
+data/clippings.db
 data/json/*
 !data/json/.gitkeep
 data/pics/*
 !data/pics/.gitkeep
 My Clippings.txt
+testClips.db

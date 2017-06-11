@@ -23,12 +23,28 @@ class ClipsParser(object):
     __USELESS_PREFIX = '\ufeff'
 
     def __getclips(self):
-        # 因为 My Clippings.txt 不是unicode编码，这里需要进行
+        """读取'My Clippings.txt'文件，解析并将‘标注’存入列表中。
+        """
+        # 因为 My Clippings.txt 不是unicode编码，打开时需要设置编码方式
         with open(self.__full_filename, 'r', encoding='utf-8') as f:
             clips = f.read()
         return [c for c in clips.split(self.__SPLIT_LINE) if c]
 
     def __parseclips(self, clips):
+        """将所有的标注解析至一个字典中，字典schema如下：
+        {
+            bookname: {
+                index: {
+                    'type': value,
+                    'pos': value,
+                    'time': value,
+                    'content': value
+                },
+                ...
+            },
+            ...
+        }
+        """
         book_clips = defaultdict(dict)
         for num, clip in enumerate(clips):
             clip = [n for n in clip.split('\n') if n]
@@ -42,6 +58,7 @@ class ClipsParser(object):
             attrs = re.match(
                 r'.*您在(.{1}\s[0-9-]+\s.{1})?.*?(#[0-9-]+)?.?的(.*)?\s\|\s添加于\s(.*)$',
                 clip[1])
+            # 由于“标注位置”的具体形式有三种，所以这里需要进行判断
             if attrs.group(1):
                 if attrs.group(2):
                     pos = attrs.group(1) + '(' + attrs.group(2) + ')'
@@ -69,14 +86,15 @@ class ClipsParser(object):
     def parse(self):
         clips = self.__getclips()
         book_clips = self.__parseclips(clips)
+        # 保存json格式文件作为备份。
         jsonname = self.__filename.split('.')[0] + '.json'
         jsonfile = os.path.join(JSONFILE_FOLDER, jsonname)
         with open(jsonfile, 'w') as f:
             json.dump(book_clips, f)
-        # return book_clips
+        return book_clips
 
 
 # Testing
 if __name__ == '__main__':
     cp = ClipsParser(filename)
-    cp.parse()
+    clips = cp.parse()
