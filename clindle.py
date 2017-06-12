@@ -9,6 +9,7 @@ License: BSD, see LICENSE for more details.
 
 import os
 import json
+import math
 import sqlite3
 from datetime import datetime
 from pypinyin import lazy_pinyin
@@ -83,30 +84,15 @@ class UploadForm(FlaskForm):
     submit = SubmitField('上传')
 
 
-# 视图函数
-@app.route('/')
-def index():
-    # 临时性解决方式 -- not lasting --
-    jsonfiles = os.listdir(app.config['JSONFILE_FOLDER'])
-    jsonfiles.remove('.gitkeep')
-    if jsonfiles:
-        jsonname = jsonfiles[0]
-        jsonfile = os.path.join(app.config['JSONFILE_FOLDER'], jsonname)
-        with open(jsonfile, 'r') as f:
-            book_clips = json.load(f)
-            books = list(book_clips.keys())
-    else:
-        books = None
-
-    form = UploadForm()
-    return render_template('index.html', books=books, form=form,
-                           jsonname=jsonname)
-
-
 @app.errorhandler(413)
 def entity_too_large(error):
     flash('File size are too large!')
     return redirect(url_for('index')), 413
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'), 404
 
 
 # 将‘标注’存储至数据库
@@ -140,6 +126,61 @@ def save2db(clips):
     conn.close()
 
 
+# 视图函数
+@app.route('/', defaults={'page': 1})
+@app.route('/page/<int:page>')
+def index(page):
+    def collate_pinyin(t1, t2):
+        """working with 'order by' in sql statement,
+        making it possible to order by chinese characters.
+        """
+        py_t1 = ''.join(lazy_pinyin(t1))
+        py_t2 = ''.join(lazy_pinyin(t2))
+        if py_t1 == py_t2:
+            return 0
+        elif py_t1 < py_t2:
+            return -1
+        else:
+            return 1
+
+    conn = get_db()
+    cur = conn.cursor()
+    conn.create_collation('pinyin', collate_pinyin)
+    
+    # pagination
+    try:
+        # get the count of books
+        cur.execute('select count(title) from Books;')
+        book_count = cur.fetchone()
+        # number of pagination
+        page_count = math.ceil(book_count[0] / app.config['PER_PAGE'])
+        if page not in range(1, page_count + 1):
+            abort(404)
+    except:
+        page_count = 0
+        if page != 1:
+            abort(404)
+
+    # get only fixed number, which is specified by 'PER_PAGE', of records
+    # from database 
+    try:
+        cur.execute(
+            'select id, title from Books order by title collate pinyin limit ? offset ?;',
+            (app.config['PER_PAGE'], app.config['PER_PAGE'] * (page - 1)))
+        books = cur.fetchall()
+    except:
+        books = {}
+
+    form = UploadForm()
+    return render_template('index.html', books=books, form=form,
+                           page=page, page_count=page_count)
+
+
+@app.route('/book/<int:book_id>')
+def show_clips(book_id):
+    return 'no content for book: {}'.format(book_id)
+
+
 # ------File upload------
 # --使用flask-uploads扩展上传文件--
 @app.route('/upload', methods=['POST'])
@@ -165,7 +206,6 @@ def upload():
             filename = clipstxt.save(f, name=f_rename)
             kindleparser = ClipsParser(filename)
             clips = kindleparser.parse()
-            print(type(clips))
             save2db(clips)
             flash('文件上传成功。')
         except UploadNotAllowed:

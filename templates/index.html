@@ -38,15 +38,35 @@
     </div>
     <div class="line clear"></div>
     <div class="booklist">
-        {% if jsonname %}
-        <p>{{ jsonname }}</p>
-        {% endif %}
-        {% if books %}
-        {% for booktitle in books %}
+        <p>You are looking at page: {{ page }}</p>
+
+        {% for book in books %}
+        <div class="book-board clearfix">
+            <a class="image" href="{{ url_for('show_clips', book_id=book.id) }}">
+                <img src="" alt="{{ book.title }}"></a>
+            <a class="title" href="{{ url_for('show_clips', book_id=book.id) }}">
+                {{ book.title }}</a>
+        </div>
+        {% else %}
         <div class="book-board">
-            <p>{{ booktitle }}</p>
+            <p>OPPS, there is nothing here.</p>
         </div>
         {% endfor %}
+
+        <!--pagination-->
+        {% if page_count != 0 %}
+        <div class="pagination">
+            {% if page <= 1 %}
+            <a class="prev inactive">&lt;&lt;上一页</a>
+            <a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a>
+            {% elif page < page_count %}
+            <a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a>
+            <a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a>
+            {% else %}
+            <a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a>
+            <a class="next inactive">下一页&gt;&gt;</a>
+            {% endif %}
+        </div>
         {% endif %}
     </div>
 </div>
