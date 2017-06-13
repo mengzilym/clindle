@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="side-func">
+    <a class="goback" href="{{ url_for('index') }}">返回书籍列表</a>
+    <div class="book">
+        <img class="image" src="" alt="{{ title }}">
+        <p>{{ title }}</p>
+    </div>
+</div>
 
+<div class="side-content clips">
+    <div class="cliplist">
+        {% for clip in clips %}
+        <div class="clips">
+            {% if clip.content %}
+            <p>{{ clip.content }}</p>
+            {% endif %}
+            
+        {% endfor %}
+</div>
 {% endblock %}

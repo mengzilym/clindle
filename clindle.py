@@ -95,6 +95,7 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
+# utilities
 # 将‘标注’存储至数据库
 def save2db(clips):
     """将解析得到的标注dict对象，保存到数据库中。
@@ -126,27 +127,29 @@ def save2db(clips):
     conn.close()
 
 
+# collation function
+def collate_pinyin(t1, t2):
+    """working with 'order by' in sql statement,
+    making it possible to order by chinese characters.
+    """
+    py_t1 = ''.join(lazy_pinyin(t1))
+    py_t2 = ''.join(lazy_pinyin(t2))
+    if py_t1 == py_t2:
+        return 0
+    elif py_t1 < py_t2:
+        return -1
+    else:
+        return 1
+
+
 # 视图函数
 @app.route('/', defaults={'page': 1})
 @app.route('/page/<int:page>')
 def index(page):
-    def collate_pinyin(t1, t2):
-        """working with 'order by' in sql statement,
-        making it possible to order by chinese characters.
-        """
-        py_t1 = ''.join(lazy_pinyin(t1))
-        py_t2 = ''.join(lazy_pinyin(t2))
-        if py_t1 == py_t2:
-            return 0
-        elif py_t1 < py_t2:
-            return -1
-        else:
-            return 1
-
     conn = get_db()
     cur = conn.cursor()
     conn.create_collation('pinyin', collate_pinyin)
-    
+
     # pagination
     try:
         # get the count of books
@@ -162,7 +165,7 @@ def index(page):
             abort(404)
 
     # get only fixed number, which is specified by 'PER_PAGE', of records
-    # from database 
+    # from database
     try:
         cur.execute(
             'select id, title from Books order by title collate pinyin limit ? offset ?;',
@@ -178,7 +181,21 @@ def index(page):
 
 @app.route('/book/<int:book_id>')
 def show_clips(book_id):
-    return 'no content for book: {}'.format(book_id)
+    """return clips of one book.
+    """
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            'select cliptype, pos, time, content from Clips where bookid = ?',
+            (book_id,))
+        clips = cur.fetchall()
+        cur.execute('select title from Books where id = ?', (book_id,))
+        title = cur.fetchone()[0]
+    except:
+        clips = {}
+        title = None
+    return render_template('bookclips.html', clips=clips, title=title)
 
 
 # ------File upload------

@@ -124,22 +124,20 @@ div.booklist {
     margin: 10px 0px;
     /*border: 1px solid;*/
 }
-div.book-board {
-    margin: 5px;
-    padding: 5px 20px;
+a.book-board {
+    margin: 0px 0px 20px 0px;
+    padding: 5px;
+    width: 100%;
     border: 1px solid #b8b8b8;
     border-radius: 4px;
+    display: block;
+    transition: 0.2s;
 }
-.clearfix  {
-    overflow: auto;
+div.booklist a:hover {
+    background-color: #ffffff;
+    box-shadow: 0px 0px 6px 1px #d8d8d8;
 }
-div.book-board a {
-    float: left;
-    display: inline;
-    /*margin: 0px;
-    padding: 0px;*/
-}
-div.book-board a img {
+div.booklist a img {
     width: 100px;
     height: 135px;
 }

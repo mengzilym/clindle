@@ -41,12 +41,9 @@
         <p>You are looking at page: {{ page }}</p>
 
         {% for book in books %}
-        <div class="book-board clearfix">
-            <a class="image" href="{{ url_for('show_clips', book_id=book.id) }}">
-                <img src="" alt="{{ book.title }}"></a>
-            <a class="title" href="{{ url_for('show_clips', book_id=book.id) }}">
-                {{ book.title }}</a>
-        </div>
+        <a class="book-board" href="{{ url_for('show_clips', book_id=book.id) }}">
+            <img class="image" src="" alt="{{ book.title }}">
+            {{ book.title }}</a>
         {% else %}
         <div class="book-board">
             <p>OPPS, there is nothing here.</p>
