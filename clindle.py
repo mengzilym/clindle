@@ -11,6 +11,7 @@ import os
 import json
 import math
 import sqlite3
+import sys
 from datetime import datetime
 from pypinyin import lazy_pinyin
 from flask import Flask, flash, abort, g, redirect, render_template, \
@@ -101,30 +102,51 @@ def save2db(clips):
     """将解析得到的标注dict对象，保存到数据库中。
     如果不是第一次解析，则只根据有变化的数据更新数据库。
     """
+    error = None
     conn = get_db()
     cur = conn.cursor()
 
     with app.open_resource('schema.sql', 'r') as f:
         cur.executescript(f.read())
 
-    def titles():
+    def _titles():
         for title in clips.keys():
             yield (title,)
     try:
         # 将书籍名称存入Books表中
-        cur.executemany('insert into Books(title) values(?)', titles())
-        # 将标注信息存入Clips表中
+        cur.executemany('insert into Books(title) values(?);', _titles())
         for title, clipsofonebook in clips.items():
-            cur.execute('select id from Books where title = ?', (title,))
+            cur.execute('select id from Books where title = ?;', (title,))
             bookid = cur.fetchone()[0]
+            notes = {}
             for clip in clipsofonebook.values():
-                cur.execute('insert into Clips values(null, ?, ?, ?, ?, ?)',
-                            (clip['type'], clip['pos'], clip['time'],
-                                clip['content'], bookid))
+                # save '标注' clips to Clips table.
+                # warning: the 'content' of '标注' can be 'null' :<
+                if clip['type'] == '标注':
+                    cur.execute(
+                        'insert into Clips values(null, ?, ?, ?, ?, ?);',
+                        (clip['pos'], clip['index_pos'], clip['time'],
+                            clip['content'], bookid))
+                # save '书签' clips to Marks table.
+                elif clip['type'] == '书签':
+                    cur.execute('insert into Marks values(null, ?, ?, ?);',
+                                (clip['pos'], clip['time'], bookid))
+                else:
+                    notes[clip['time']] = clip
+            if notes:
+                for t, clip in notes.items():
+                    cur.execute('select id from Clips where time = ?;', (t,))
+                    clipid = cur.fetchone()[0]
+                    cur.execute(
+                        'insert into Notes values(null, ?, ?, ?, ?, ?);',
+                        (clip['pos'], clip['time'], clip['content'],
+                            bookid, clipid))
     except:
         conn.rollback()
+        error = ('Failed to save data to database :(')
     conn.commit()
     conn.close()
+    return error
 
 
 # collation function
@@ -154,9 +176,9 @@ def index(page):
     try:
         # get the count of books
         cur.execute('select count(title) from Books;')
-        book_count = cur.fetchone()
+        book_count = cur.fetchone()[0]
         # number of pagination
-        page_count = math.ceil(book_count[0] / app.config['PER_PAGE'])
+        page_count = math.ceil(book_count / app.config['PER_PAGE'])
         if page not in range(1, page_count + 1):
             abort(404)
     except:
@@ -187,10 +209,10 @@ def show_clips(book_id):
     cur = conn.cursor()
     try:
         cur.execute(
-            'select cliptype, pos, time, content from Clips where bookid = ?',
+            'select pos, time, content from Clips where bookid = ? order by indexpos;',
             (book_id,))
         clips = cur.fetchall()
-        cur.execute('select title from Books where id = ?', (book_id,))
+        cur.execute('select title from Books where id = ?;', (book_id,))
         title = cur.fetchone()[0]
     except:
         clips = {}
@@ -223,8 +245,11 @@ def upload():
             filename = clipstxt.save(f, name=f_rename)
             kindleparser = ClipsParser(filename)
             clips = kindleparser.parse()
-            save2db(clips)
-            flash('文件上传成功。')
+            error = save2db(clips)
+            if error:
+                flash('Upload success. But:<br> {}'.format(error))
+            else:
+                flash('Upload success.')
         except UploadNotAllowed:
             # 经过上面form.validate_on_submit()，下面这两句应该不会执行了
             flash('出错：UploadNotAllowed。<br>请检查文件格式是否正确。')
