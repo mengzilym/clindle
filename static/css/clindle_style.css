@@ -94,17 +94,17 @@ div.side-content {
     width: 75%;
 }
 
-div.book-edit-func li {
+.book-edit-func li, .clip-edit-func li {
     display: inline;
 }
-div.book-edit-func li a {
-    font-size: 12px;
+.book-edit-func li a, .clip-edit-func li a {
+    font-size: 8px;
     margin: 0px;
     padding: 2px 10px;
     border-radius: 5px;
     background-color: #e8e8e8;
 }
-div.book-edit-func li a:hover {
+.book-edit-func li a:hover, .clip-edit-func li a:hover {
     background-color: #42a5f5;
     color: white;
 }
@@ -118,7 +118,7 @@ ul.order {float: left;}
 ul.cover {float: left;}
 ul.layout {float: left;}
 
-div.booklist {
+div.booklist, div.cliplist {
     min-width: 400px;
     min-height: 100px;
     margin: 10px 0px;
@@ -140,6 +140,35 @@ div.booklist a:hover {
 div.booklist a img {
     width: 100px;
     height: 135px;
+}
+
+div.clip-board {
+    margin: 0px 0px 20px 0px;
+    padding: 5px;
+    width: 100%;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    transition: 0.2s;
+}
+div.clip-board:hover {
+    box-shadow: 0px 0px 6px 1px #d8d8d8;
+}
+div.clip-board p {
+    margin: 5px 0px;
+}
+.note-of-clip {
+    color: gray;
+    font-weight: bold;
+}
+.label, .clip-edit-func {
+    margin: 5px 0px;
+    padding: 0px 5px;
+    color: gray;
+}
+.label li {
+    display: inline;
+    margin: 0px 20px 0px 0px;
+    font-size: 8px;
 }
 
 footer {

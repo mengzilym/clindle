@@ -85,9 +85,8 @@ class ClipsParser(object):
             index_md5.update(str(clip).encode('utf-8'))
             index = index_md5.hexdigest()
             # 获取clip的类型、标注位置和标注时间
-            attrs = re.match(
-                r'.*您在(.{1}\s[0-9-]+\s.{1})?.*?(#[0-9-]+)?.?的(.*)?\s\|\s添加于\s(.*)$',
-                clip[1])
+            attrs = re.match(r'.*您在(.{1}\s[0-9-]+\s.{1})?.*?(#[0-9-]+)?.?'
+                             '的(.*)?\s\|\s添加于\s(.*)$', clip[1])
             # 由于“标注位置”的具体形式有三种，所以这里需要进行判断
             if attrs.group(1):
                 if attrs.group(2):

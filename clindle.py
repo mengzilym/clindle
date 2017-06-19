@@ -99,8 +99,9 @@ def page_not_found(error):
 # utilities
 # 将‘标注’存储至数据库
 def save2db(clips):
-    """将解析得到的标注dict对象，保存到数据库中。
-    如果不是第一次解析，则只根据有变化的数据更新数据库。
+    """将解析得到的clips字典对象，保存到数据库中。
+    每次重新上传'My Clippings.txt'时，重新创建数据库里的表。
+    问题：如果要“获取封面”，可以考虑建立一个缓存文件夹，缓存之前已经获取到的封面图片
     """
     error = None
     conn = get_db()
@@ -115,6 +116,7 @@ def save2db(clips):
     try:
         # 将书籍名称存入Books表中
         cur.executemany('insert into Books(title) values(?);', _titles())
+        # Insert values into Clips, Notes, Marks tables.
         for title, clipsofonebook in clips.items():
             cur.execute('select id from Books where title = ?;', (title,))
             bookid = cur.fetchone()[0]
@@ -126,13 +128,15 @@ def save2db(clips):
                     cur.execute(
                         'insert into Clips values(null, ?, ?, ?, ?, ?);',
                         (clip['pos'], clip['index_pos'], clip['time'],
-                            clip['content'], bookid))
+                         clip['content'], bookid))
                 # save '书签' clips to Marks table.
                 elif clip['type'] == '书签':
-                    cur.execute('insert into Marks values(null, ?, ?, ?);',
-                                (clip['pos'], clip['time'], bookid))
+                    cur.execute(
+                        'insert into Marks values(null, ?, ?, ?, ?);',
+                        (clip['pos'], clip['index_pos'], clip['time'], bookid))
                 else:
                     notes[clip['time']] = clip
+            # save '笔记' clips to Notes table.
             if notes:
                 for t, clip in notes.items():
                     cur.execute('select id from Clips where time = ?;', (t,))
@@ -140,8 +144,8 @@ def save2db(clips):
                     cur.execute(
                         'insert into Notes values(null, ?, ?, ?, ?, ?);',
                         (clip['pos'], clip['time'], clip['content'],
-                            bookid, clipid))
-    except:
+                         bookid, clipid))
+    except sqlite3.Error:
         conn.rollback()
         error = ('Failed to save data to database :(')
     conn.commit()
@@ -164,7 +168,7 @@ def collate_pinyin(t1, t2):
         return 1
 
 
-# 视图函数
+# 视图函数 view functions
 @app.route('/', defaults={'page': 1})
 @app.route('/page/<int:page>')
 def index(page):
@@ -173,6 +177,8 @@ def index(page):
     conn.create_collation('pinyin', collate_pinyin)
 
     # pagination
+    # use "try" expression in case there are no tables at all
+    # before uploading text document.
     try:
         # get the count of books
         cur.execute('select count(title) from Books;')
@@ -181,19 +187,19 @@ def index(page):
         page_count = math.ceil(book_count / app.config['PER_PAGE'])
         if page not in range(1, page_count + 1):
             abort(404)
-    except:
+    except sqlite3.Error:
         page_count = 0
         if page != 1:
             abort(404)
 
-    # get only fixed number, which is specified by 'PER_PAGE', of records
-    # from database
+    # get only fixed number of records as specified by 'PER_PAGE' from database
     try:
         cur.execute(
-            'select id, title from Books order by title collate pinyin limit ? offset ?;',
+            'select id, title from Books '
+            'order by title collate pinyin limit ? offset ?;',
             (app.config['PER_PAGE'], app.config['PER_PAGE'] * (page - 1)))
         books = cur.fetchall()
-    except:
+    except sqlite3.Error:
         books = {}
 
     form = UploadForm()
@@ -203,21 +209,32 @@ def index(page):
 
 @app.route('/book/<int:book_id>')
 def show_clips(book_id):
-    """return clips of one book.
+    """return clips/notes/marks of one book.
     """
     conn = get_db()
     cur = conn.cursor()
-    try:
-        cur.execute(
-            'select pos, time, content from Clips where bookid = ? order by indexpos;',
-            (book_id,))
-        clips = cur.fetchall()
-        cur.execute('select title from Books where id = ?;', (book_id,))
-        title = cur.fetchone()[0]
-    except:
-        clips = {}
-        title = None
-    return render_template('bookclips.html', clips=clips, title=title)
+    # get clips and associated notes.
+    cur.execute(
+        'select c.pos, c.time, c.content as clipcnt, n.content as notecnt '
+        'from Clips as c left join Notes as n '
+        'on c.id = n.clipid '
+        'where c.bookid = ? order by indexpos;',
+        (book_id,))
+    clips = cur.fetchall()
+    cur.execute('select title from Books where id = ?;', (book_id,))
+    title = cur.fetchone()
+    if title:
+        title = title[0]
+    else:
+        abort(404)
+    # get marks if any.
+    cur.execute(
+        'select pos, time from Marks where bookid = ? order by indexpos;',
+        (book_id,))
+    marks = cur.fetchall()
+
+    return render_template('bookclips.html', clips=clips,
+                           title=title, marks=marks)
 
 
 # ------File upload------
@@ -230,7 +247,7 @@ def upload():
     调用解析函数，将解析内容存入json文件和数据库；然后刷新索引页面。
     Upload 'My Clippings.txt' file, rename according to datetime,
     and save to local 'backup_file' folder.
-    Call the parsing function and save parsed content to json file and database.
+    Use parsing function and save parsed content to json file and database.
     Then refresh the webpage.
     """
     form = UploadForm()

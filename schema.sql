@@ -28,10 +28,11 @@ CREATE TABLE Notes (
     clipid integer not null,
     FOREIGN KEY(bookid) REFERENCES Books(id),
     FOREIGN KEY(clipid) REFERENCES Clips(id)
-);
+);  
 CREATE TABLE Marks (
     id integer primary key autoincrement,
     pos text not null,
+    indexpos integer not null,
     time text not null,
     bookid integer not null,
     FOREIGN KEY(bookid) REFERENCES Books(id)
