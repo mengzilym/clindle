@@ -41,9 +41,21 @@
         <p>You are looking at page: {{ page }}</p>
 
         {% for book in books %}
-        <a class="book-board" href="{{ url_for('show_clips', book_id=book.id) }}">
-            <img class="image" src="" alt="{{ book.title }}">
-            {{ book.title }}</a>
+        <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id) }}">
+            <div class="book-board-container clearfix">
+                <div class="cover-container">
+                    <img class="image" src="" alt="{{ book.title }}">
+                </div>
+                <div class="title-container">
+                    <ul>
+                        <li>标注数：{{ book.clipnum }}</li>
+                        <li>笔记数：{{ book.notenum }}</li>
+                        <li>书签数：{{ book.marknum }}</li>
+                    </ul>
+                    <p>{{ book.title }}</p>
+                </div>
+            </div>
+        </a>
         {% else %}
         <div class="book-board">
             <p>OPPS, there is nothing here.</p>

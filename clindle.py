@@ -194,9 +194,27 @@ def index(page):
 
     # get only fixed number of records as specified by 'PER_PAGE' from database
     try:
+        # counts of clips, notes and marks of one book are queried.
+        # And yes, this is a VERY LONG SQL statement!
+        sql = (
+            'SELECT cn_num.id, cn_num.title, cn_num.clipnum, cn_num.notenum, '
+            'COUNT(m.id) AS marknum '
+            'FROM '
+            '   (SELECT c_num.id , c_num.title, c_num.clipnum, '
+            '   COUNT(n.id) AS notenum '
+            '   FROM '
+            '       (SELECT b.id, b.title, COUNT(c.id) AS clipnum '
+            '       FROM '
+            '           Books AS b LEFT JOIN Clips AS c ON b.id = c.bookid '
+            '       GROUP BY b.id '
+            '       ORDER BY b.title COLLATE pinyin LIMIT ? OFFSET ?) AS c_num'
+            '   LEFT JOIN Notes AS n ON c_num.id = n.bookid '
+            '   GROUP BY c_num.id) AS cn_num '
+            'LEFT join Marks AS m ON cn_num.id = m.bookid '
+            'GROUP BY cn_num.id ORDER BY cn_num.title COLLATE pinyin;'
+        )
         cur.execute(
-            'select id, title from Books '
-            'order by title collate pinyin limit ? offset ?;',
+            sql,
             (app.config['PER_PAGE'], app.config['PER_PAGE'] * (page - 1)))
         books = cur.fetchall()
     except sqlite3.Error:
