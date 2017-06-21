@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="side-func">
-    <a class="goback" href="{{ url_for('index') }}">返回书籍列表</a>
+    <a class="goback" href="{{ url_for('index', page=page) }}">返回书籍列表</a>
     {% if title %}
     <div class="book">
         <img class="image" src="" alt="{{ title }}">

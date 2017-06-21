@@ -41,7 +41,7 @@
         <p>You are looking at page: {{ page }}</p>
 
         {% for book in books %}
-        <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id) }}">
+        <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, page=page) }}">
             <div class="book-board-container clearfix">
                 <div class="cover-container">
                     <img class="image" src="" alt="{{ book.title }}">
@@ -53,6 +53,7 @@
                         <li>书签数：{{ book.marknum }}</li>
                     </ul>
                     <p>{{ book.title }}</p>
+                    <p style="font-size: 8px; color: gray;">By: {{ book.author }}</p>
                 </div>
             </div>
         </a>
@@ -65,16 +66,19 @@
         <!--pagination-->
         {% if page_count != 0 %}
         <div class="pagination">
-            {% if page <= 1 %}
-            <a class="prev inactive">&lt;&lt;上一页</a>
-            <a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a>
-            {% elif page < page_count %}
-            <a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a>
-            <a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a>
-            {% else %}
-            <a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a>
-            <a class="next inactive">下一页&gt;&gt;</a>
-            {% endif %}
+            <ul>
+                <li>{{ page }}/{{ page_count }}</li>
+                {% if page <= 1 %}
+                <li><a class="prev inactive">&lt;&lt;上一页</a></li>
+                <li><a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a></li>
+                {% elif page < page_count %}
+                <li><a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a></li>
+                <li><a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a></li>
+                {% else %}
+                <li><a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a></li>
+                <li><a class="next inactive">下一页&gt;&gt;</a></li>
+                {% endif %}
+            </ul>
         </div>
         {% endif %}
     </div>

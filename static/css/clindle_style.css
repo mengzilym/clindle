@@ -176,6 +176,14 @@ a.book-board-link:hover {
     font-size: 8px;
     color: gray;
 }
+.pagination ul {
+    /*list-style-type: none;*/
+    padding: 0px;
+}
+.pagination li {
+    display: inline;
+    margin-right: 20px;
+}
 
 div.clip-board {
     margin: 0px 0px 20px 0px;

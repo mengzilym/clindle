@@ -7,16 +7,12 @@ Copyright: (C) 2017 by Liu Yameng.
 License: BSD, see LICENSE for more details.
 """
 
-import json
 import math
-import os
-import re
 import sqlite3
-import sys
 from datetime import datetime
 
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
-                   session, url_for)
+                   url_for)
 from flask_uploads import (TEXT, UploadNotAllowed, UploadSet,
                            configure_uploads, patch_request_class)
 from flask_wtf import FlaskForm
@@ -26,6 +22,7 @@ from werkzeug.utils import secure_filename
 from wtforms import SubmitField
 
 from kindle_parser import ClipsParser
+from utils import save2db, collate_pinyin
 
 # from config import *
 
@@ -100,102 +97,6 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 
-# utilities
-# 将‘标注’存储至数据库
-def save2db(clips):
-    """将解析得到的clips字典对象，保存到数据库中。
-    每次重新上传'My Clippings.txt'时，重新创建数据库里的表。
-    问题：如果要“获取封面”，可以考虑建立一个缓存文件夹，缓存之前已经获取到的封面图片
-    """
-    error = None
-    conn = get_db()
-    cur = conn.cursor()
-
-    with app.open_resource('schema.sql', 'r') as f:
-        cur.executescript(f.read())
-
-    def _sep_t_a(title):
-        """将原始title中的作者姓名分离出来。
-        此功能放在 kindle_parser.py 更好，但是考虑到还要调整 clips 字典的结构，
-        就暂时懒得改了。
-        """
-        if not title.endswith(')'):
-            author = None
-        else:
-            ptn = r'.*(\([^()]*\))$'
-            PTN_L = r'\(.*?'
-            PTN_R = r'.*?\)'
-            for i in range(5):
-                author_match = re.match(ptn, title)
-                if author_match:
-                    author = author_match.group(1)[1:-1]
-                    title = title[:-len(author)-2]
-                    break
-                else:
-                    ptn = ptn[:3] + PTN_L + ptn[3:-2] + PTN_R + ptn[-2:]
-        return (title, author)
-
-    def _titles():
-        for title in clips.keys():
-            yield _sep_t_a(title)
-
-    try:
-        # 将书籍名称存入Books表中
-        cur.executemany('insert into Books(title, author) values(?, ?);',
-                        _titles())
-        # Insert values into Clips, Notes, Marks tables.
-        for title, clipsofonebook in clips.items():
-            title, _ = _sep_t_a(title)
-            cur.execute('select id from Books where title = ?;', (title,))
-            bookid = cur.fetchone()[0]
-            notes = {}
-            for clip in clipsofonebook.values():
-                # save '标注' clips to Clips table.
-                # warning: the 'content' of '标注' can be 'null' :<
-                if clip['type'] == '标注':
-                    cur.execute(
-                        'insert into Clips values(null, ?, ?, ?, ?, ?);',
-                        (clip['pos'], clip['index_pos'], clip['time'],
-                         clip['content'], bookid))
-                # save '书签' clips to Marks table.
-                elif clip['type'] == '书签':
-                    cur.execute(
-                        'insert into Marks values(null, ?, ?, ?, ?);',
-                        (clip['pos'], clip['index_pos'], clip['time'], bookid))
-                else:
-                    notes[clip['time']] = clip
-            # save '笔记' clips to Notes table.
-            if notes:
-                for t, clip in notes.items():
-                    cur.execute('select id from Clips where time = ?;', (t,))
-                    clipid = cur.fetchone()[0]
-                    cur.execute(
-                        'insert into Notes values(null, ?, ?, ?, ?, ?);',
-                        (clip['pos'], clip['time'], clip['content'],
-                         bookid, clipid))
-    except sqlite3.Error:
-        conn.rollback()
-        error = ('Failed to save data to database :(')
-    conn.commit()
-    conn.close()
-    return error
-
-
-# collation function
-def collate_pinyin(t1, t2):
-    """working with 'order by' in sql statement,
-    making it possible to order by chinese characters.
-    """
-    py_t1 = ''.join(lazy_pinyin(t1))
-    py_t2 = ''.join(lazy_pinyin(t2))
-    if py_t1 == py_t2:
-        return 0
-    elif py_t1 < py_t2:
-        return -1
-    else:
-        return 1
-
-
 # 视图函数 view functions
 @app.route('/', defaults={'page': 1})
 @app.route('/page/<int:page>')
@@ -225,13 +126,13 @@ def index(page):
         # counts of clips, notes and marks of one book are queried.
         # And yes, this is a VERY LONG SQL statement!
         sql = (
-            'SELECT cn_num.id, cn_num.title, cn_num.clipnum, cn_num.notenum, '
-            'COUNT(m.id) AS marknum '
+            'SELECT cn_num.id, cn_num.title, cn_num.author, cn_num.clipnum, '
+            'cn_num.notenum, COUNT(m.id) AS marknum '
             'FROM '
-            '   (SELECT c_num.id , c_num.title, c_num.clipnum, '
+            '   (SELECT c_num.id , c_num.title, c_num.author, c_num.clipnum, '
             '   COUNT(n.id) AS notenum '
             '   FROM '
-            '       (SELECT b.id, b.title, COUNT(c.id) AS clipnum '
+            '       (SELECT b.id, b.title, b.author, COUNT(c.id) AS clipnum '
             '       FROM '
             '           Books AS b LEFT JOIN Clips AS c ON b.id = c.bookid '
             '       GROUP BY b.id '
@@ -257,6 +158,7 @@ def index(page):
 def show_clips(book_id):
     """return clips/notes/marks of one book.
     """
+    page = request.args.get('page')
     conn = get_db()
     cur = conn.cursor()
     # get clips and associated notes.
@@ -280,7 +182,7 @@ def show_clips(book_id):
     marks = cur.fetchall()
 
     return render_template('bookclips.html', clips=clips,
-                           title=title, marks=marks)
+                           title=title, marks=marks, page=page)
 
 
 # ------File upload------
