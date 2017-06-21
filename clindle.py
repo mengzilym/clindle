@@ -7,22 +7,26 @@ Copyright: (C) 2017 by Liu Yameng.
 License: BSD, see LICENSE for more details.
 """
 
-import os
 import json
 import math
+import os
+import re
 import sqlite3
 import sys
 from datetime import datetime
-from pypinyin import lazy_pinyin
-from flask import Flask, flash, abort, g, redirect, render_template, \
-    request, session, url_for
-from werkzeug.utils import secure_filename
-from flask_uploads import UploadSet, TEXT, configure_uploads, \
-    patch_request_class, UploadNotAllowed
+
+from flask import (Flask, abort, flash, g, redirect, render_template, request,
+                   session, url_for)
+from flask_uploads import (TEXT, UploadNotAllowed, UploadSet,
+                           configure_uploads, patch_request_class)
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired, FileAllowed
+from flask_wtf.file import FileAllowed, FileField, FileRequired
+from pypinyin import lazy_pinyin
+from werkzeug.utils import secure_filename
 from wtforms import SubmitField
+
 from kindle_parser import ClipsParser
+
 # from config import *
 
 
@@ -110,14 +114,38 @@ def save2db(clips):
     with app.open_resource('schema.sql', 'r') as f:
         cur.executescript(f.read())
 
+    def _sep_t_a(title):
+        """将原始title中的作者姓名分离出来。
+        此功能放在 kindle_parser.py 更好，但是考虑到还要调整 clips 字典的结构，
+        就暂时懒得改了。
+        """
+        if not title.endswith(')'):
+            author = None
+        else:
+            ptn = r'.*(\([^()]*\))$'
+            PTN_L = r'\(.*?'
+            PTN_R = r'.*?\)'
+            for i in range(5):
+                author_match = re.match(ptn, title)
+                if author_match:
+                    author = author_match.group(1)[1:-1]
+                    title = title[:-len(author)-2]
+                    break
+                else:
+                    ptn = ptn[:3] + PTN_L + ptn[3:-2] + PTN_R + ptn[-2:]
+        return (title, author)
+
     def _titles():
         for title in clips.keys():
-            yield (title,)
+            yield _sep_t_a(title)
+
     try:
         # 将书籍名称存入Books表中
-        cur.executemany('insert into Books(title) values(?);', _titles())
+        cur.executemany('insert into Books(title, author) values(?, ?);',
+                        _titles())
         # Insert values into Clips, Notes, Marks tables.
         for title, clipsofonebook in clips.items():
+            title, _ = _sep_t_a(title)
             cur.execute('select id from Books where title = ?;', (title,))
             bookid = cur.fetchone()[0]
             notes = {}
