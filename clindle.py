@@ -113,11 +113,11 @@ def index(page):
         cur.execute('select count(title) from Books;')
         book_count = cur.fetchone()[0]
         # number of pagination
-        page_count = math.ceil(book_count / app.config['PER_PAGE'])
-        if page not in range(1, page_count + 1):
+        page_num = math.ceil(book_count / app.config['PER_PAGE'])
+        if page not in range(1, page_num + 1):
             abort(404)
     except sqlite3.Error:
-        page_count = 0
+        page_num = 0
         if page != 1:
             abort(404)
 
@@ -151,7 +151,7 @@ def index(page):
 
     form = UploadForm()
     return render_template('index.html', books=books, form=form,
-                           page=page, page_count=page_count)
+                           page=page, page_num=page_num)
 
 
 @app.route('/book/<int:book_id>')

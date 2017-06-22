@@ -182,7 +182,18 @@ a.book-board-link:hover {
 }
 .pagination li {
     display: inline;
-    margin-right: 20px;
+    margin-right: 10px;
+}
+.pagination a {
+    padding: 0px 5px;
+}
+.pagination .num_focus a {
+    background-color: #e8e8e8;
+    border-radius: 5px;
+}
+.pagination a:hover {
+    font-weight: bold;
+    color: darkblue;
 }
 
 div.clip-board {

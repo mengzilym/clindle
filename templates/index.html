@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from 'pagination.html' import paginate_arrow, paginate_num %}
+
 {% block content %}
 <div class="side-func">
     <!--文件上传：Flask-wtf & Flask-uploads插件实现-->
@@ -38,7 +40,8 @@
     </div>
     <div class="line clear"></div>
     <div class="booklist">
-        <p>You are looking at page: {{ page }}</p>
+        
+        {{ paginate_num(page_num, page, 'index') }}
 
         {% for book in books %}
         <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, page=page) }}">
@@ -63,24 +66,7 @@
         </div>
         {% endfor %}
 
-        <!--pagination-->
-        {% if page_count != 0 %}
-        <div class="pagination">
-            <ul>
-                <li>{{ page }}/{{ page_count }}</li>
-                {% if page <= 1 %}
-                <li><a class="prev inactive">&lt;&lt;上一页</a></li>
-                <li><a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a></li>
-                {% elif page < page_count %}
-                <li><a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a></li>
-                <li><a class="next" href="{{ url_for('index', page=page+1) }}">下一页&gt;&gt;</a></li>
-                {% else %}
-                <li><a class="prev" href="{{ url_for('index', page=page-1) }}">&lt;&lt;上一页</a></li>
-                <li><a class="next inactive">下一页&gt;&gt;</a></li>
-                {% endif %}
-            </ul>
-        </div>
-        {% endif %}
+        {{ paginate_arrow(page_num, page, 'index') }}
     </div>
 </div>
      
