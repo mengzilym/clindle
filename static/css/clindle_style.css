@@ -129,10 +129,8 @@ ul.cover {float: left;}
 ul.layout {float: left;}
 
 div.booklist, div.cliplist {
-    /*min-width: 600px;*/
     min-height: 100px;
     margin: 10px 0px;
-    /*border: 1px solid;*/
 }
 a.book-board-link {
     margin: 0px 0px 20px 0px;
@@ -141,11 +139,12 @@ a.book-board-link {
     border: 1px solid #b8b8b8;
     border-radius: 4px;
     display: block;
-    transition: 0.2s;
+    transition: 0.1s;
+    box-shadow: 0px 1px 2px #b8b8b8;
 }
 a.book-board-link:hover {
-    background-color: #ffffff;
-    box-shadow: 0px 0px 6px 1px #d8d8d8;
+    background-color: #f6f6f6;
+    box-shadow: 0px 4px 8px #b8b8b8;
 }
 .cover-container {
     float: left;
@@ -176,6 +175,7 @@ a.book-board-link:hover {
     font-size: 8px;
     color: gray;
 }
+
 .pagination ul {
     /*list-style-type: none;*/
     padding: 0px;
@@ -196,16 +196,22 @@ a.book-board-link:hover {
     color: darkblue;
 }
 
+.cliplist-mark {
+    float: left;
+    width: 75%;
+}
 div.clip-board {
     margin: 0px 0px 20px 0px;
     padding: 5px;
     width: 100%;
     border: 1px solid #b8b8b8;
     border-radius: 4px;
-    transition: 0.2s;
+    transition: 0.1s;
+    box-shadow: 0px 1px 2px #d8d8d8;
 }
 div.clip-board:hover {
-    box-shadow: 0px 0px 6px 1px #d8d8d8;
+    background-color: #f6f6f6;
+    box-shadow: 0px 4px 8px #b8b8b8;
 }
 div.clip-board p {
     margin: 5px 0px;
@@ -223,6 +229,30 @@ div.clip-board p {
     display: inline;
     margin: 0px 20px 0px 0px;
     font-size: 8px;
+}
+
+.marks {
+    float: left;
+    width: 25%;
+}
+.mark-title {
+    margin: 0px 0px 10px 22px;
+}
+.mark {
+    margin: 10px 0px 10px 22px;
+    padding: 5px;
+    background-color: #e8e8e8;
+    box-shadow: 0px 1px 2px gray; 
+    transition: 0.1s;
+}
+.mark:hover {
+    box-shadow: 0px 4px 6px gray;
+}
+.mark p {
+    margin: 4px 0px;
+    font-size: 6px;
+    color: black;
+    line-height: 100%;
 }
 
 footer {

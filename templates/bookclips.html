@@ -12,7 +12,11 @@
 </div>
 
 <div class="side-content clips">
+    {% if marks %}
+    <div class="cliplist-mark">
+    {% else %}
     <div class="cliplist">
+    {% endif %}
         {% for clip in clips %}
         <div class="clip-board">
             {% if clip.clipcnt %}
@@ -22,6 +26,11 @@
             <div class="line clear"></div>
             <p>{{ clip.notecnt }}</p>
             {% endif %}
+            {% else %}
+            <p style="color:gray;">
+                <span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
+            虽然莫名其妙，但是你添加了一个没有任何内容的标注 :(
+            </p>
             {% endif %}
             <div class="line clear"></div>
             <ul class="label">
@@ -37,15 +46,19 @@
         </div>
         {% else %}
         <div class="emptyclip">
-            <p>没有任何标注。</p>
+            <p><span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
+            没有任何标注。</p>
         </div>
         {% endfor %}
     </div>
-    <div cliss="marks">
+    <div class="marks">
+        {% if marks %}
+        <p class="mark-title">书签</p>
+        {% endif %}
         {% for mark in marks %}
-        <div>
-            <p>{{ mark.pos }}</p>
-            <p>{{ mark.time }}</p>
+        <div class="mark">
+            <p>位置：{{ mark.pos }}</p>
+            <p>时间：{{ mark.time }}</p>
         </div>
         {% endfor %}
     </div>

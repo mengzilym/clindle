@@ -58,9 +58,9 @@ pagination style ->
         {% endfor %}
 
         <li class="num_nav">...</li>
-        <li class="num_nav"><a href="{{ url_for(route_func, page=page_num) }}">{{ idx }}</a></li>
+        <li class="num_nav"><a href="{{ url_for(route_func, page=page_num) }}">{{ page_num }}</a></li>
     {% elif page >= page_num - side - 2 %}
-        <li class="num_nav"><a href="{{ url_for(route_func, page=1) }}">{{ idx }}</a></li>
+        <li class="num_nav"><a href="{{ url_for(route_func, page=1) }}">1</a></li>
         <li class="num_nav">...</li>
 
         {% for idx in range(page - side, page_num + 1) %}
@@ -71,7 +71,7 @@ pagination style ->
         {% endif %}
         {% endfor %}
     {% else %}
-        <li class="num_nav"><a href="{{ url_for(route_func, page=1) }}">{{ idx }}</a></li>
+        <li class="num_nav"><a href="{{ url_for(route_func, page=1) }}">1</a></li>
         <li class="num_nav">...</li>
 
         {% for idx in range(page - side, page + side + 1) %}
@@ -83,7 +83,7 @@ pagination style ->
         {% endfor %}
 
         <li class="num_nav">...</li>
-        <li class="num_nav"><a href="{{ url_for(route_func, page=page_num) }}">{{ idx }}</a></li>
+        <li class="num_nav"><a href="{{ url_for(route_func, page=page_num) }}">{{ page_num }}</a></li>
     {% endif %}
     </ul>
 </div>
