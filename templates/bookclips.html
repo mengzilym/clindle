@@ -2,10 +2,12 @@
 
 {% block content %}
 <div class="side-func">
-    <a class="goback" href="{{ url_for('index', page=page) }}">返回书籍列表</a>
+    <div class="gb-wrapper">
+    <a class="goback link-button" href="{{ url_for('index', page=page) }}">&lt;&lt; 返回书籍列表</a>
+    </div>
     {% if title %}
     <div class="book">
-        <img class="image" src="" alt="{{ title }}">
+        <img src="" alt="{{ title }}">
         <p>{{ title }}</p>
     </div>
     {% endif %}

@@ -1,22 +1,32 @@
 html, body {margin: 0px; padding: 0px; min-width: 1000px;}
 a {text-decoration: none; color: black;}
 .clear {clear: both;}
-/*.clearfix::after {
-    content: "";
-    clear: both;
-    display: table;
-}*/
 .clearfix {
     overflow: auto;
 }
+a.link-button {
+    background-color: #00bcd4;
+    color: white;
+}
+a.link-button:hover {
+    box-shadow: 0px 6px 12px rgba(0,0,0,0.2);
+}
 
 div.banner {
+    position: fixed;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    right: 0px;
     height: 60px;
     text-align: center;
-    /*border: 1px solid;*/
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.26);
+    background-color: #00bcd4;
 }
 div.banner h2 {
-    margin: 10px 0 10px;
+    color: white;
+    line-height: 60px;
+    margin: 0px;
 }
 div.line {
     height: 1px;
@@ -24,6 +34,7 @@ div.line {
     background-color: #b8b8b8;
 }
 
+/*弹出信息 flashed message*/
 .message {
     position: absolute;
     left: 50%;
@@ -56,15 +67,38 @@ div.line {
     border-radius: 5px;
 }
 
+/*分页*/
+.pagination ul {
+    /*list-style-type: none;*/
+    padding: 0px;
+}
+.pagination li {
+    display: inline;
+    margin-right: 10px;
+}
+.pagination a {
+    color: #00bcd4;
+    padding: 0px 5px;
+    transition: 0.2s;
+}
+.pagination .num_focus a, .pagination a:hover {
+    color: white;
+    background-color: #00bcd4;
+    border-radius: 20px;
+}
+
+
 div.content {
     width: 80%;
     /*min-width: 800px;*/
     margin-left: 10%;
+    margin-top: 80px;
 }
+
 
 div.side-func {
     float: left;
-    width: 20%;
+    width: 18%;
     min-height: 600px;
     /*border: 1px solid;*/
 }
@@ -87,20 +121,37 @@ input.upload-txt {
     clear: right;
     /*border: 1px solid;*/
 }
-.get-cover {
+.gc-wrapper {
     margin: 20px 0 20px;
     float: right;
     clear: right;
 }
-.get-cover a {
-    height: 40px;
-    margin: 5px 0px 5px;
-    border: 1px solid;
+.side-func a.goback, a.get-cover {
+    line-height: 36px;
+    padding: 5px 10px;
 }
+
+.side-func .gb-wrapper {
+    margin-top: 20px;
+}
+.side-func .book {
+    margin-top: 20px;
+}
+.side-func .book img {
+    height: 100px;
+    width: 100px;
+}
+.side-func .book p {
+    margin: 5px 0px;
+    padding-left: 4px;
+    font-size: 12px;
+    border-left: 2px solid #00bcd4;
+}
+
 
 div.side-content {
     float: right;
-    width: 75%;
+    width: 80%;
     min-width: 600px;
 }
 
@@ -115,7 +166,7 @@ div.side-content {
     background-color: #e8e8e8;
 }
 .book-edit-func li a:hover, .clip-edit-func li a:hover {
-    background-color: #42a5f5;
+    background-color: #00bcd4;
     color: white;
 }
 li.pipe {
@@ -144,7 +195,7 @@ a.book-board-link {
 }
 a.book-board-link:hover {
     background-color: #f6f6f6;
-    box-shadow: 0px 4px 8px #b8b8b8;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.26);
 }
 .cover-container {
     float: left;
@@ -174,26 +225,6 @@ a.book-board-link:hover {
 .title-container li {
     font-size: 8px;
     color: gray;
-}
-
-.pagination ul {
-    /*list-style-type: none;*/
-    padding: 0px;
-}
-.pagination li {
-    display: inline;
-    margin-right: 10px;
-}
-.pagination a {
-    padding: 0px 5px;
-}
-.pagination .num_focus a {
-    background-color: #e8e8e8;
-    border-radius: 5px;
-}
-.pagination a:hover {
-    font-weight: bold;
-    color: darkblue;
 }
 
 .cliplist-mark {
@@ -254,6 +285,7 @@ div.clip-board p {
     color: black;
     line-height: 100%;
 }
+
 
 footer {
     height: 100px;
