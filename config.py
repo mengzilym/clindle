@@ -11,7 +11,7 @@ JSONFILE_FOLDER = os.path.join(os.getcwd(), 'data', 'json')
 COVERPIC_FOLDER = os.path.join(os.getcwd(), 'data', 'pics')
 ALLOWED_EXTENSIONS = set(['txt'])
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
-PER_PAGE = 5
+PER_PAGE = 2
 
 # flask-uploads 扩展设置；flask-uploads extension configures
 UPLOADED_CLIPSTXT_DEST = UPLOAD_FOLDER
