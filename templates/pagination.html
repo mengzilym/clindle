@@ -9,7 +9,7 @@ pagination style ->
 <div class="pagination">
     <a class="plain-text">{{ page }}/{{ page_num }}</a>
     {% if page <= 1 %}
-    <a class="arrow">❮</li>
+    <a class="arrow">❮</a>
     <a class="nav arrow" href="{{ url_for(route_func, page=page+1) }}">❯</a>
     {% elif page < page_num %}
     <a class="nav arrow" href="{{ url_for(route_func, page=page-1) }}">❮</a>

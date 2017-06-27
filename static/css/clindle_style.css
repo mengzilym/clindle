@@ -237,6 +237,7 @@ a.book-board-link:hover {
 .cliplist-mark {
     float: left;
     width: 75%;
+    margin-top: 10px;
 }
 div.clip-board {
     background-color: white;

@@ -13,5 +13,3 @@ data/json/*
 !data/json/.gitkeep
 data/pics/*
 !data/pics/.gitkeep
-My Clippings.txt
-testClips.db

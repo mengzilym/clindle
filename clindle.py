@@ -113,7 +113,7 @@ def index(page):
         cur.execute('select count(title) from Books;')
         book_count = cur.fetchone()[0]
         # number of pagination
-        page_num = math.ceil(book_count / app.config['PER_PAGE'])
+        page_num = math.ceil(book_count / app.config['PER_PAGE_BOOK'])
         if page not in range(1, page_num + 1):
             abort(404)
     except sqlite3.Error:
@@ -144,7 +144,7 @@ def index(page):
         )
         cur.execute(
             sql,
-            (app.config['PER_PAGE'], app.config['PER_PAGE'] * (page - 1)))
+            (app.config['PER_PAGE_BOOK'], app.config['PER_PAGE_BOOK'] * (page - 1)))
         books = cur.fetchall()
     except sqlite3.Error:
         books = {}
@@ -158,16 +158,25 @@ def index(page):
 def show_clips(book_id):
     """return clips/notes/marks of one book.
     """
-    page = request.args.get('page')
+    page = request.args.get('frompage')
+    clippage = int(request.args.get('clippage', 1))
     conn = get_db()
     cur = conn.cursor()
+
+    # pagination
+    cur.execute('select count(id) from Clips where bookid = ?;', (book_id,))
+    clip_count = cur.fetchone()[0]
+    # number of clips pagination
+    clip_num = math.ceil(clip_count / app.config['PER_PAGE_CLIP'])
+    if clippage not in range(1, clip_num + 1):
+            abort(404)
     # get clips and associated notes.
     cur.execute(
         'select c.pos, c.time, c.content as clipcnt, n.content as notecnt '
         'from Clips as c left join Notes as n '
-        'on c.id = n.clipid '
-        'where c.bookid = ? order by indexpos;',
-        (book_id,))
+        'on c.id = n.clipid where c.bookid = ? '
+        'order by indexpos limit ? offset ?;',
+        (book_id, app.config['PER_PAGE_CLIP'], app.config['PER_PAGE_CLIP'] * (clippage - 1)))
     clips = cur.fetchall()
     cur.execute('select title from Books where id = ?;', (book_id,))
     title = cur.fetchone()
@@ -181,8 +190,9 @@ def show_clips(book_id):
         (book_id,))
     marks = cur.fetchall()
 
-    return render_template('bookclips.html', clips=clips,
-                           title=title, marks=marks, page=page)
+    return render_template('bookclips.html', clips=clips, title=title,
+                           marks=marks, page=page, book_id=book_id,
+                           clip_num=clip_num, clippage=clippage)
 
 
 # ------File upload------
@@ -235,6 +245,5 @@ def get_cover():
 
 if __name__ == '__main__':
     app.run(
-        debug=True,
         port=5000
     )

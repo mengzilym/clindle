@@ -1,0 +1,6 @@
+python==3.5.2
+Flask==0.12
+flask_uploads==0.1.3
+flask_wtf==0.14.2
+wtforms==2.1
+pypinyin==0.18.1

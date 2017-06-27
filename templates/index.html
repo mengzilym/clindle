@@ -44,7 +44,7 @@
         {{ paginate_num(page_num, page, 'index') }}
 
         {% for book in books %}
-        <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, page=page) }}">
+        <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, frompage=page) }}">
             <div class="book-board-container clearfix">
                 <div class="cover-container">
                     <img src="" alt="{{ book.title }}">

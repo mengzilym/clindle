@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+<!--{% from 'pagination.html' import paginate_arrow, paginate_num %}-->
+
 {% block content %}
 <div class="side-func">
     <div class="gb-wrapper">
@@ -19,39 +21,39 @@
     {% else %}
     <div class="cliplist">
     {% endif %}
-        {% for clip in clips %}
-        <div class="clip-board">
-            {% if clip.clipcnt %}
-            <p>{{ clip.clipcnt }}</p>
-            {% if clip.notecnt %}
-            <p class="note-of-clip">笔记：</span></p>
-            <div class="line clear"></div>
-            <p>{{ clip.notecnt }}</p>
-            {% endif %}
-            {% else %}
-            <p style="color:gray;">
-                <span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
-            虽然莫名其妙，但是你添加了一个没有任何内容的标注 :(
-            </p>
-            {% endif %}
-            <div class="line clear"></div>
-            <ul class="label">
-                <li>位置：{{ clip.pos }}</li>
-                <li>添加时间：{{ clip.time }}</li>
-            </ul>
-            <div class="line clear"></div>
-            <ul class="clip-edit-func">
-                <li><a href="">编辑笔记</a></li>
-                <li><a href="">文本分享</a></li>
-                <li><a href="">图片分享</a></li>
-            </ul>
-        </div>
+    {% for clip in clips %}
+    <div class="clip-board">
+        {% if clip.clipcnt %}
+        <p>{{ clip.clipcnt }}</p>
+        {% if clip.notecnt %}
+        <p class="note-of-clip">笔记：</span></p>
+        <div class="line clear"></div>
+        <p>{{ clip.notecnt }}</p>
+        {% endif %}
         {% else %}
-        <div class="emptyclip">
-            <p><span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
-            没有任何标注。</p>
-        </div>
-        {% endfor %}
+        <p style="color:gray;">
+            <span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
+        虽然莫名其妙，但是你添加了一个没有任何内容的标注 :(
+        </p>
+        {% endif %}
+        <div class="line clear"></div>
+        <ul class="label">
+            <li>位置：{{ clip.pos }}</li>
+            <li>添加时间：{{ clip.time }}</li>
+        </ul>
+        <div class="line clear"></div>
+        <ul class="clip-edit-func">
+            <li><a href="">编辑笔记</a></li>
+            <li><a href="">文本分享</a></li>
+            <li><a href="">图片分享</a></li>
+        </ul>
+    </div>
+    {% else %}
+    <div class="emptyclip">
+        <p><span style="font-weight:bold;background-color:#ffff00;">#WARN</span>
+        没有任何标注。</p>
+    </div>
+    {% endfor %}
     </div>
     <div class="marks">
         {% if marks %}
