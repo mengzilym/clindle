@@ -6,7 +6,7 @@ Clindle (k**indle** **cli**ppings) 是一个管理Kindle标注/笔记/书签的�
 # 功能
 
 - [x] 上传“My Clippings.txt”文档并进行解析，将解析后的内容存入json文件和SQLite数据库，json文件用作备份。
-> 解析内容包括书籍名称、作者、标注类型（标注/笔记/书签）、标注时间、位置。
+ - 解析内容包括书籍名称、作者、标注类型（标注/笔记/书签）、标注时间、位置。
 - [x] 以书籍列表的形式查看各书籍的标注情况，如示例图1所示
 - [x] 查看单本书籍的标注内容，及对应的位置、标注时间，如示例图2所示
 - [ ] 获取书籍封面：本来想通过亚马逊的Product Advertising API获取书籍信息，结果亚马逊商业联盟申请没通过 :( 打算通过直接解析搜索结果页获取书籍封面url
@@ -34,6 +34,6 @@ Clindle (k**indle** **cli**ppings) 是一个管理Kindle标注/笔记/书签的�
 
 # 示例截图
 
-![截图1](https://raw.githubusercontent.com//mengzilym/clindle/master/static/images/screenshot1.jpg "图1")
+![截图1](https://raw.githubusercontent.com/mengzilym/clindle/master/static/images/screenshot1.jpg "图1")
 
-![截图2](https://raw.githubusercontent.com//mengzilym/clindle/master/static/images/screenshot2.jpg "图2")
+![截图2](https://raw.githubusercontent.com/mengzilym/clindle/master/static/images/screenshot2.jpg "图2")
