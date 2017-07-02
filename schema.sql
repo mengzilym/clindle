@@ -13,7 +13,8 @@ CREATE TABLE Books (
 CREATE TABLE Clips (
     id integer primary key autoincrement,
     pos text not null,
-    indexpos integer not null,
+    startpos integer not null,
+    endpos integer,
     time text not null,
     content text,
     bookid integer not null,
@@ -32,7 +33,8 @@ CREATE TABLE Notes (
 CREATE TABLE Marks (
     id integer primary key autoincrement,
     pos text not null,
-    indexpos integer not null,
+    startpos integer not null,
+    endpos integer,
     time text not null,
     bookid integer not null,
     FOREIGN KEY(bookid) REFERENCES Books(id)

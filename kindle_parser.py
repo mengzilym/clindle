@@ -46,10 +46,15 @@ class ClipsParser(object):
         3: both 1 and 2;
         4: '第 1-2 页'|'第 1 页';
         """
-        patn = re.compile(r'(?:.*#(\d+))|(?:第(\d+))')
+        patn = re.compile(r'(?:.*#(\d+)-?(\d+)?)|(?:第(\d+)-?(\d+)?)')
         posptn = patn.match(pos.replace(' ', ''))
-        index_pos = posptn.group(1) if posptn.group(1) else posptn.group(2)
-        return int(index_pos)
+        if posptn.group(1):
+            s_pos = posptn.group(1)
+            e_pos = posptn.group(2)
+        else:
+            s_pos = posptn.group(3)
+            e_pos = posptn.group(4)
+        return (int(s_pos), int(e_pos)) if e_pos else (int(s_pos), int(s_pos))
 
     def _getclips(self):
         """读取'My Clippings.txt'文件，解析并将‘标注’存入列表中。
@@ -66,7 +71,8 @@ class ClipsParser(object):
                 index: {
                     'type': value,
                     'pos': value,
-                    'index_pos': value,
+                    'start_pos': value,
+                    'end_pos': value,
                     'time': value,
                     'content': value
                 },
@@ -105,8 +111,9 @@ class ClipsParser(object):
             except:
                 content = None
 
+            start_pos, end_pos = self._format_pos(pos)
             book_clip = {'type': clip_type, 'pos': pos,
-                         'index_pos': self._format_pos(pos),
+                         'start_pos': start_pos, 'end_pos': end_pos,
                          'time': self._format_time(time), 'content': content}
 
             book_clips[bookname].update({index: book_clip})
@@ -140,11 +147,11 @@ if __name__ == '__main__':
     pos4 = '第32页(#456)'
     pos5 = '第34-35页'
     pos6 = '第45页'
-    assert cp._format_pos(pos1) == 10190
-    assert cp._format_pos(pos2) == 6803
-    assert cp._format_pos(pos3) == 11659
-    assert cp._format_pos(pos4) == 456
-    assert cp._format_pos(pos5) == 34
-    assert cp._format_pos(pos6) == 45
+    assert cp._format_pos(pos1) == (10190, 10191)
+    assert cp._format_pos(pos2) == (6803, 6803)
+    assert cp._format_pos(pos3) == (11659, 11661)
+    assert cp._format_pos(pos4) == (456, 456)
+    assert cp._format_pos(pos5) == (34, 35)
+    assert cp._format_pos(pos6) == (45, 45)
     print('NO BUGS ON FORMATTING.')
     # clips = cp.parse()

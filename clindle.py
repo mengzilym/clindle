@@ -143,8 +143,8 @@ def index(page):
             'GROUP BY cn_num.id ORDER BY cn_num.title COLLATE pinyin;'
         )
         cur.execute(
-            sql,
-            (app.config['PER_PAGE_BOOK'], app.config['PER_PAGE_BOOK'] * (page - 1)))
+            sql, (app.config['PER_PAGE_BOOK'],
+                  app.config['PER_PAGE_BOOK'] * (page - 1)))
         books = cur.fetchall()
     except sqlite3.Error:
         books = {}
@@ -175,8 +175,9 @@ def show_clips(book_id):
         'select c.pos, c.time, c.content as clipcnt, n.content as notecnt '
         'from Clips as c left join Notes as n '
         'on c.id = n.clipid where c.bookid = ? '
-        'order by indexpos limit ? offset ?;',
-        (book_id, app.config['PER_PAGE_CLIP'], app.config['PER_PAGE_CLIP'] * (clippage - 1)))
+        'order by startpos limit ? offset ?;',
+        (book_id, app.config['PER_PAGE_CLIP'],
+         app.config['PER_PAGE_CLIP'] * (clippage - 1)))
     clips = cur.fetchall()
     cur.execute('select title from Books where id = ?;', (book_id,))
     title = cur.fetchone()
@@ -186,7 +187,7 @@ def show_clips(book_id):
         abort(404)
     # get marks if any.
     cur.execute(
-        'select pos, time from Marks where bookid = ? order by indexpos;',
+        'select pos, time from Marks where bookid = ? order by startpos;',
         (book_id,))
     marks = cur.fetchall()
 
@@ -245,5 +246,6 @@ def get_cover():
 
 if __name__ == '__main__':
     app.run(
-        port=5000
+        port=5000,
+        debug=True
     )

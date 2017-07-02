@@ -52,34 +52,40 @@ def save2db(clips):
             title, _ = _sep_t_a(title)
             cur.execute('select id from Books where title = ?;', (title,))
             bookid = cur.fetchone()[0]
-            notes = {}
+            notes = []
             for clip in clipsofonebook.values():
                 # save '标注' clips to Clips table.
                 # warning: the 'content' of '标注' can be 'null' :<
                 if clip['type'] == '标注':
                     cur.execute(
-                        'insert into Clips values(null, ?, ?, ?, ?, ?);',
-                        (clip['pos'], clip['index_pos'], clip['time'],
-                         clip['content'], bookid))
+                        'insert into Clips values(null, ?, ?, ?, ?, ?, ?);',
+                        (clip['pos'], clip['start_pos'], clip['end_pos'],
+                            clip['time'], clip['content'], bookid))
                 # save '书签' clips to Marks table.
                 elif clip['type'] == '书签':
                     cur.execute(
-                        'insert into Marks values(null, ?, ?, ?, ?);',
-                        (clip['pos'], clip['index_pos'], clip['time'], bookid))
+                        'insert into Marks values(null, ?, ?, ?, ?, ?);',
+                        (clip['pos'], clip['start_pos'], clip['end_pos'],
+                            clip['time'], bookid))
                 else:
-                    notes[clip['time']] = clip
+                    notes.append(clip)
             # save '笔记' clips to Notes table.
             if notes:
-                for t, clip in notes.items():
-                    cur.execute('select id from Clips where time = ?;', (t,))
-                    clipid = cur.fetchone()[0]
+                for clip in notes:
+                    # one '笔记' may belongs to many '标注'
                     cur.execute(
-                        'insert into Notes values(null, ?, ?, ?, ?, ?);',
-                        (clip['pos'], clip['time'], clip['content'],
-                         bookid, clipid))
-    except sqlite3.Error:
+                        'select id from Clips where startpos <= ? '
+                        'and endpos >= ?;',
+                        (clip['start_pos'], clip['start_pos']))
+                    clipids = cur.fetchall()
+                    for clipid in clipids:
+                        cur.execute(
+                            'insert into Notes values(null, ?, ?, ?, ?, ?);',
+                            (clip['pos'], clip['time'], clip['content'],
+                                bookid, clipid[0]))
+    except sqlite3.Error as e:
         conn.rollback()
-        error = ('Failed to save data to database :(')
+        error = ('Failed to save data to database :(, {}'.format(e))
     conn.commit()
     conn.close()
     return error
