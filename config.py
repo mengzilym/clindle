@@ -13,6 +13,7 @@ ALLOWED_EXTENSIONS = set(['txt'])
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 PER_PAGE_BOOK = 3
 PER_PAGE_CLIP = 5
+PER_PAGE_MARK = 5
 
 # flask-uploads 扩展设置；flask-uploads extension configures
 UPLOADED_CLIPSTXT_DEST = UPLOAD_FOLDER

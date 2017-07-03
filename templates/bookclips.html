@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-<!--{% from 'pagination.html' import paginate_arrow, paginate_num %}-->
+{% from 'pagination.html' import paginate_arrow, paginate_num %}
 
 {% block content %}
 <div class="side-func">
@@ -21,6 +21,11 @@
     {% else %}
     <div class="cliplist">
     {% endif %}
+
+    {% if clip_pagenum > 1 %}
+    {{ paginate_num(clip_pagenum, clippage, 'clippage') }}
+    {% endif %}
+
     {% for clip in clips %}
     <div class="clip-board">
         {% if clip.clipcnt %}
@@ -65,6 +70,11 @@
             <p>时间：{{ mark.time }}</p>
         </div>
         {% endfor %}
+
+        {% if mark_pagenum > 1 %}
+        {{ paginate_arrow(mark_pagenum, markpage, 'markpage') }}
+        {% endif %}
+        
     </div>
 </div>
 

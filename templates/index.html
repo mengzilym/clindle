@@ -41,7 +41,9 @@
     <div class="line clear"></div>
     <div class="booklist">
         
-        {{ paginate_num(page_num, page, 'index') }}
+        {% if page_num > 1 %}
+        {{ paginate_num(page_num, page) }}
+        {% endif %}
 
         {% for book in books %}
         <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, frompage=page) }}">
@@ -66,7 +68,9 @@
         </div>
         {% endfor %}
 
-        {{ paginate_arrow(page_num, page, 'index') }}
+        {% if page_num > 1 %}
+        {{ paginate_arrow(page_num, page) }}
+        {% endif %}
     </div>
 </div>
      

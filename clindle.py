@@ -22,7 +22,7 @@ from werkzeug.utils import secure_filename
 from wtforms import SubmitField
 
 from kindle_parser import ClipsParser
-from utils import save2db, collate_pinyin
+from utils import save2db, collate_pinyin, url_for_page
 
 # from config import *
 
@@ -32,6 +32,8 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 # 或许需要加载独立的、根据环境而变化的配置文件
 app.config.from_envvar('FLASK_SETTINGS', silent=True)
+# 向jinja注册一个环境变量，以便在模板中使用此方法
+app.jinja_env.globals['url_for_page'] = url_for_page
 
 
 # 数据库操作函数
@@ -160,15 +162,16 @@ def show_clips(book_id):
     """
     page = request.args.get('frompage')
     clippage = int(request.args.get('clippage', 1))
+    markpage = int(request.args.get('markpage', 1))
     conn = get_db()
     cur = conn.cursor()
 
-    # pagination
+    # clips pagination
     cur.execute('select count(id) from Clips where bookid = ?;', (book_id,))
     clip_count = cur.fetchone()[0]
     # number of clips pagination
-    clip_num = math.ceil(clip_count / app.config['PER_PAGE_CLIP'])
-    if clippage not in range(1, clip_num + 1):
+    clip_pagenum = math.ceil(clip_count / app.config['PER_PAGE_CLIP'])
+    if clippage not in range(1, clip_pagenum + 1):
             abort(404)
     # get clips and associated notes.
     cur.execute(
@@ -185,15 +188,25 @@ def show_clips(book_id):
         title = title[0]
     else:
         abort(404)
+
+    # marks pagination
+    cur.execute('select count(id) from Marks where bookid = ?;', (book_id,))
+    mark_count = cur.fetchone()[0]
+    mark_pagenum = math.ceil(mark_count / app.config['PER_PAGE_MARK'])
+    if mark_count and markpage not in range(1, mark_pagenum + 1):
+        abort(404)
     # get marks if any.
     cur.execute(
-        'select pos, time from Marks where bookid = ? order by startpos;',
-        (book_id,))
+        'select pos, time from Marks where bookid = ? '
+        'order by startpos limit ? offset ?;',
+        (book_id, app.config['PER_PAGE_MARK'],
+         app.config['PER_PAGE_MARK'] * (markpage - 1)))
     marks = cur.fetchall()
 
     return render_template('bookclips.html', clips=clips, title=title,
                            marks=marks, page=page, book_id=book_id,
-                           clip_num=clip_num, clippage=clippage)
+                           clip_pagenum=clip_pagenum, clippage=clippage,
+                           mark_pagenum=mark_pagenum, markpage=markpage)
 
 
 # ------File upload------

@@ -1,32 +1,28 @@
-{% macro paginate_arrow(page_num, page, route_func) %}
+{% macro paginate_arrow(page_num, page, page_name='page') %}
 {# parameters ->
 page_num: numbers of pagination;
-page: the page users are visiting;
-route_func: route map function passed to 'url_for' method,
-            and it should has a parameter 'page'.
+page: the page users are visiting.
 pagination style ->
 'page/page_num  <<  >>' #}
 <div class="pagination">
     <a class="plain-text">{{ page }}/{{ page_num }}</a>
     {% if page <= 1 %}
     <a class="arrow">❮</a>
-    <a class="nav arrow" href="{{ url_for(route_func, page=page+1) }}">❯</a>
+    <a class="nav arrow" href="{{ url_for_page(page+1, page_name) }}">❯</a>
     {% elif page < page_num %}
-    <a class="nav arrow" href="{{ url_for(route_func, page=page-1) }}">❮</a>
-    <a class="nav arrow" href="{{ url_for(route_func, page=page+1) }}">❯</a>
+    <a class="nav arrow" href="{{ url_for_page(page-1, page_name) }}">❮</a>
+    <a class="nav arrow" href="{{ url_for_page(page+1, page_name) }}">❯</a>
     {% else %}
-    <a class="nav arrow" href="{{ url_for(route_func, page=page-1) }}">❮</a>
+    <a class="nav arrow" href="{{ url_for_page(page-1, page_name) }}">❮</a>
     <a class="arrow">❯</a>
     {% endif %}
 </div>
 {% endmacro %}
 
-{% macro paginate_num(page_num, page, route_func, side=2, length=10) %}
+{% macro paginate_num(page_num, page, page_name='page', side=2, length=10) %}
 {# parameters ->
 page_num: numbers of pagination;
 page: the page users are visiting;
-route_func: route map function passed to 'url_for' method,
-            and it should has a parameter 'page';
 side: number of digits shown on either side of above 'page';
 length: the maximum number of digits you want show.
 pagination style ->
@@ -40,14 +36,14 @@ pagination style ->
     {% if page == 1 %}
         <a class="plain-text">❮</a>
     {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=page-1) }}">❮</a>
+        <a class="nav" href="{{ url_for_page(page-1, page_name) }}">❮</a>
     {% endif %}
     {% if page_num <= length %}
         {% for idx in range(1, page_num + 1) %}
         {% if idx == page %}
         <a class="focus">{{ idx }}</a>
         {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=idx) }}">{{ idx }}</a>
+        <a class="nav" href="{{ url_for_page(idx, page_name) }}">{{ idx }}</a>
         {% endif %}
         {% endfor %}
     {% elif page <= side + 3 %}
@@ -55,42 +51,42 @@ pagination style ->
         {% if idx == page %}
         <a class="focus">{{ idx }}</a>
         {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=idx) }}">{{ idx }}</a>
+        <a class="nav" href="{{ url_for_page(idx, page_name) }}">{{ idx }}</a>
         {% endif %}
         {% endfor %}
 
         <a>...</a>
-        <a class="nav" href="{{ url_for(route_func, page=page_num) }}">{{ page_num }}</a>
+        <a class="nav" href="{{ url_for_page(page_num, page_name) }}">{{ page_num }}</a>
     {% elif page >= page_num - side - 2 %}
-        <a class="nav" href="{{ url_for(route_func, page=1) }}">1</a>
+        <a class="nav" href="{{ url_for_page(1, page_name) }}">1</a>
         <a>...</a>
 
         {% for idx in range(page - side, page_num + 1) %}
         {% if idx == page %}
         <a class="focus">{{ idx }}</a>
         {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=idx) }}">{{ idx }}</a>
+        <a class="nav" href="{{ url_for_page(idx, page_name) }}">{{ idx }}</a>
         {% endif %}
         {% endfor %}
     {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=1) }}">1</a>
+        <a class="nav" href="{{ url_for_page(1, page_name) }}">1</a>
         <a>...</a>
 
         {% for idx in range(page - side, page + side + 1) %}
         {% if idx == page %}
         <a class="focus">{{ idx }}</a>
         {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=idx) }}">{{ idx }}</a>
+        <a class="nav" href="{{ url_for_page(idx, page_name) }}">{{ idx }}</a>
         {% endif %}
         {% endfor %}
 
         <a>...</a>
-        <a class="nav" href="{{ url_for(route_func, page=page_num) }}">{{ page_num }}</a>
+        <a class="nav" href="{{ url_for_page(page_num, page_name) }}">{{ page_num }}</a>
     {% endif %}
     {% if page == page_num  %}
         <a class="plain-text">❯</a>
     {% else %}
-        <a class="nav" href="{{ url_for(route_func, page=page+1) }}">❯</a>
+        <a class="nav" href="{{ url_for_page(page+1, page_name) }}">❯</a>
     {% endif %}
 </div>
 {% endmacro %}

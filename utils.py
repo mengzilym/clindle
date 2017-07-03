@@ -1,10 +1,10 @@
 import re
 import sqlite3
 from config import DATABASE
+from flask import request, url_for
 from pypinyin import lazy_pinyin
 
 
-# 将‘标注’存储至数据库
 def save2db(clips):
     """将解析得到的clips字典对象，保存到数据库中。
     每次重新上传'My Clippings.txt'时，重新创建数据库里的表。
@@ -91,9 +91,8 @@ def save2db(clips):
     return error
 
 
-# collation function
 def collate_pinyin(t1, t2):
-    """working with 'order by' in sql statement,
+    """collation function, working with 'order by' in sql statement,
     making it possible to order by chinese characters.
     """
     py_t1 = ''.join(lazy_pinyin(t1))
@@ -104,3 +103,12 @@ def collate_pinyin(t1, t2):
         return -1
     else:
         return 1
+
+
+def url_for_page(page, page_name):
+    """used in pagination, to get the url for next or pre page.
+    """
+    kwargs = request.view_args.copy()
+    kwargs.update(request.args.to_dict())
+    kwargs[page_name] = page
+    return url_for(request.endpoint, **kwargs)

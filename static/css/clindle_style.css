@@ -276,7 +276,10 @@ div.clip-board p {
     width: 25%;
 }
 .mark-title {
-    margin: 0px 0px 10px 22px;
+    margin: 20px 0px 10px 22px;
+}
+.marks .pagination {
+    margin: 0px 0px 0px 22px;
 }
 .mark {
     margin: 10px 0px 10px 22px;
