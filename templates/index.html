@@ -17,7 +17,7 @@
 
     
     <div class="gc-wrapper">
-        <a class="get-cover link-button" href="/api/getcover">获取封面</a>
+        <a class="get-cover link-button" href="{{ url_for('get_cover', idxpage=page) }}">获取封面</a>
     </div>
 </div>
 
@@ -49,7 +49,7 @@
         <a class="book-board-link" href="{{ url_for('show_clips', book_id=book.id, frompage=page) }}">
             <div class="book-board-container clearfix">
                 <div class="cover-container">
-                    <img src="" alt="{{ book.title }}">
+                    <img src="{{ book.cover }}" alt="{{ book.title }}">
                 </div>
                 <div class="title-container">
                     <ul>

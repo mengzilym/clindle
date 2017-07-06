@@ -8,7 +8,12 @@ License: BSD, see LICENSE for more details.
 """
 
 import math
+import random
+import re
+import requests
 import sqlite3
+import time
+from bs4 import BeautifulSoup
 from datetime import datetime
 
 from flask import (Flask, abort, flash, g, redirect, render_template, request,
@@ -128,13 +133,14 @@ def index(page):
         # counts of clips, notes and marks of one book are queried.
         # And yes, this is a VERY LONG SQL statement!
         sql = (
-            'SELECT cn_num.id, cn_num.title, cn_num.author, cn_num.clipnum, '
-            'cn_num.notenum, COUNT(m.id) AS marknum '
+            'SELECT cn_num.id, cn_num.title, cn_num.author, cn_num.cover, '
+            'cn_num.clipnum, cn_num.notenum, COUNT(m.id) AS marknum '
             'FROM '
-            '   (SELECT c_num.id , c_num.title, c_num.author, c_num.clipnum, '
-            '   COUNT(n.id) AS notenum '
+            '   (SELECT c_num.id , c_num.title, c_num.author, c_num.cover, '
+            '   c_num.clipnum, COUNT(n.id) AS notenum '
             '   FROM '
-            '       (SELECT b.id, b.title, b.author, COUNT(c.id) AS clipnum '
+            '       (SELECT b.id, b.title, b.author, b.cover, '
+            '       COUNT(c.id) AS clipnum '
             '       FROM '
             '           Books AS b LEFT JOIN Clips AS c ON b.id = c.bookid '
             '       GROUP BY b.id '
@@ -166,6 +172,11 @@ def show_clips(book_id):
     conn = get_db()
     cur = conn.cursor()
 
+    # get book cover
+    cur.execute('select cover from Books where id = ?;', (book_id,))
+    cover = cur.fetchone()
+    cover = cover[0].replace('AA100', 'AA160') if cover else None
+    
     # clips pagination
     cur.execute('select count(id) from Clips where bookid = ?;', (book_id,))
     clip_count = cur.fetchone()[0]
@@ -203,7 +214,8 @@ def show_clips(book_id):
          app.config['PER_PAGE_MARK'] * (markpage - 1)))
     marks = cur.fetchall()
 
-    return render_template('bookclips.html', clips=clips, title=title,
+    return render_template('bookclips.html', clips=clips, 
+                           title=title, cover=cover,
                            marks=marks, page=page, book_id=book_id,
                            clip_pagenum=clip_pagenum, clippage=clippage,
                            mark_pagenum=mark_pagenum, markpage=markpage)
@@ -249,12 +261,37 @@ def upload():
     return redirect(url_for('index'))
 
 
-# 获取书籍封面
-# Get book covers.
-# todo: 多线程
-@app.route('/api/getcover')
+@app.route('/api/getcover', methods=['GET'])
 def get_cover():
-    return redirect(url_for('index'))
+    """获取书籍封面
+    Get book covers."""
+    page = request.args.get('idxpage', 1)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('select title from Books;')
+    titles = cur.fetchall()
+
+    PRE_URL = 'https://www.amazon.cn/s/ref=nb_sb_noss?__mk_zh_CN=亚马逊网站&url=search-alias%3Ddigital-text&field-keywords='
+    for title in titles:
+        search_url = PRE_URL + title[0]
+        headers = {'user-agent': random.choice(app.config['USER_AGENT'])}
+        respns = requests.get(search_url, headers=headers, timeout=1)
+        soup = BeautifulSoup(respns.text, 'html.parser')
+        img_tag = soup.select('#resultsCol ul li:nth-of-type(1) img')
+        # print(img_tag)
+        if img_tag:
+            src = img_tag[0]['src']
+            src_split = re.split(r'\._AA\d+_\.', src)
+            src_split.insert(1, '._AA100_.')
+            src = ''.join(src_split)
+        else:
+            src = None
+        # print(src)
+        # print('__________')
+        cur.execute('update Books set cover = ? where title = ?;',
+                    (src, title[0]))
+    conn.commit()
+    return redirect(url_for('index', page=page))
 
 
 if __name__ == '__main__':
